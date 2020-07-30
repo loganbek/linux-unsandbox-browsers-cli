@@ -1,4 +1,4 @@
-# Linux Run Chrome As Root
+# Linux Enable Chrome In Root
 This shell script enables google chrome to run as root in Debian and Ubuntu distros.
 
 \
