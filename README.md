@@ -8,7 +8,7 @@ This script supports the following browsers:
   4. Chromium Web Browser.
 
 \
-To download and use this script:
+To use this script:
   1. Click on *`code`* on this page.
   2. Click on *`Download Zip`*.
   3. A file named *`linux-unsandbox-browsers-master.zip`* will be downloaded. Extract the zip file in your computer. You will see a folder labelled *`linux-unsandbox-browsers-master`*. Navigate to that folder.
