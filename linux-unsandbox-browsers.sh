@@ -4,7 +4,7 @@
 1="" # Empty any parameter passed by user
 declare -r targetLinux="Debian Linux"
 declare -r scriptVersion="1.0" # Stores scripts version
-declare -l -r scriptName="linux-unsandbox-browser" # Script file name (Set to lowers and read-only)
+declare -l -r scriptName="linux-unsandbox-browsers" # Script file name (Set to lowers and read-only)
 declare -l -r networkTestUrl="www.google.com" # NetworkTestUrl (Set to lowers and read-only)
 declare -l startTime="" # Stores start time of execution
 declare -l totalExecutionTime="" # Total execution time in days:hours:minutes:seconds
@@ -30,11 +30,6 @@ operaDesktopPath=/usr/share/applications/opera.desktop
 googleChromePath=/usr/share/applications/google-chrome.desktop
 firefoxESRPath=/usr/share/applications/firefox-esr.desktop
 chromiumWebPath=/usr/share/applications/chromium.desktop
-
-#operaDesktopPath=browser/opera.desktop
-#googleChromePath=browser/google-chrome.desktop
-#firefoxESRPath=browser/firefox-esr.desktop
-#chromiumWebPath=browser/chromium.desktop
 
 # Function to create a custom coloured print
 function cPrint(){
@@ -129,7 +124,7 @@ function findReplace(){
 
 # Function to display success message once a browser is unsandboxed
 function successMessage(){
-  cPrint "GREEN" "$1 un-sandboxed. $1 will now run as root.\n"
+  cPrint "GREEN" "$1 un-sandboxed successfuly. $1 will now run as root.\n"
   holdTerminal 3 # Hold
   sectionBreak
 }
@@ -252,6 +247,7 @@ function getAllInstalledBrowsers(){
 
     # Unset variables
     unset installedBrowsers listOfInstalledBrowsers
+    unset foundOpera foundChrome foundFirefoxEsr foundChromium
 
     # Get all installed browsers
     installedBrowsers=$(ls -l /usr/share/applications/)
@@ -353,7 +349,7 @@ function getAllInstalledBrowsers(){
     then # More that one browser installed
         listCount=$[listCount+1] # Update list count
         # Add option to unSandbox all at once
-        listOfInstalledBrowsers="${listOfInstalledBrowsers} \n\t\e[1;32m$listCount. UnSandbox all browsers."
+        listOfInstalledBrowsers="${listOfInstalledBrowsers} \n\t\e[1;32m$listCount. UnSandbox all listed browsers."
     fi
 
     # Add option to cancel unSandboxation
@@ -371,7 +367,7 @@ function getAllInstalledBrowsers(){
 
 # Function to unSandbox Opera Desktop Browser
 function unSandboxOperaDesktopBrowser(){
-    cPrint "YELLOW" "UnSandboxing Opera Desktop Browser."
+    cPrint "YELLOW" "UnSandboxing $operaDesktopBrowser."
     holdTerminal 2 # Hold
 
     # Find and replace (Exec=opera --new-window) with
@@ -409,7 +405,7 @@ function unSandboxOperaDesktopBrowser(){
 
 # Function to unSandbox Google Chrome Browser
 function unSandboxGoogleChromeBrowser(){
-    cPrint "YELLOW" "UnSandboxing Google Chrome Browser."
+    cPrint "YELLOW" "UnSandboxing $googleChromeBrowser."
     holdTerminal 2 # Hold
 
     # Find and replace (Exec=/usr/bin/google-chrome-stable) with
@@ -454,7 +450,7 @@ function unSandboxGoogleChromeBrowser(){
 
 # Function to unSandbox Firefox ESR Browser
 function unSandboxFirefoxESRBrowser(){
-    cPrint "YELLOW" "Unsandboxing Firefox ESR Browser."
+    cPrint "YELLOW" "Unsandboxing $firefoxEsrBrowser."
     holdTerminal 2 # Hold
 
     # Find and replace (Exec=/usr/lib/firefox-esr/firefox-esr %u) with
@@ -471,12 +467,12 @@ function unSandboxFirefoxESRBrowser(){
     removeRepeatedNoSandBoxFlag "$firefoxESRPath"
 
     # Display Firefox ESR Browser unsandboxed message
-    successMessage "$firefoxESRPath"
+    successMessage "$firefoxEsrBrowser"
 }
 
 # Function to unSandbox Chromium Web Browser
 function unSandboxChromiumWebBrowser(){
-  cPrint "YELLOW" "Unsandboxing Chromium Web Browser."
+  cPrint "YELLOW" "Unsandboxing $chromiumWebBrowser."
   holdTerminal 2 # Hold
 
   # Find and replace (Exec=/usr/bin/chromium %U) with
@@ -526,8 +522,8 @@ function switchSelectedChoice(){
     then # Option : Chromium Web Browser
         unSandboxChromiumWebBrowser # unSandbox Chromium Web Browser
 
-    elif  [[ "$choice" == 'unsandbox all' ]]
-    then # Option : Unsandbox all browsers
+    elif  [[ "$choice" == 'unsandbox all listed' ]]
+    then # Option : Unsandbox all listed browsers
         unSandboxAllBrowsers
 
     elif  [[ "$choice" == 'exit' ]]
@@ -581,7 +577,7 @@ function displayInstalledBrowsersMenu(){
                     unset choice # Unset choice
                     choice="$option" # Set option to choice
 
-                else # Get option to unSandbox all browsers
+                else # Get option to unSandbox all listed browsers
                     unset filterParam2 # Unset filter parameter
                     # Get text between list number and 'browsers' words
                     filterParam2="$choice. \K.*?(?= browsers.)"
