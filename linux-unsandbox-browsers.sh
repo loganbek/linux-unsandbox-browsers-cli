@@ -17,6 +17,12 @@ declare firefoxEsrBrowser="Firefox ESR Browser"
 declare chromiumWebBrowser="Chromium Web Browser"
 declare -r numberExpression='^[0-9]+$' # Number expression
 declare noSandBoxFlag="--no-sandbox"; incognitoFlag="--incognito"
+
+# Variables to store un-sandbox states
+declare -i operaFullyUnSandboxed=0 operaPartiallyUnSandboxed=0
+declare -i googleChromeUnSandboxed=0 googleChromePartiallyUnSandboxed=0
+declare -i firefoxESRUnSandboxed=0
+declare -i chromiumWebUnSandboxed=0 chromiumWebPartiallyUnSandboxed=0
 clear=clear # Command to clear terminal
 
 # Paths to browsers' desktop files
@@ -151,9 +157,98 @@ function exitScript(){
     exit 0 # Exit script
 }
 
+# Function to remove repeated --no-sandbox flags
+function removeRepeatedNoSandBoxFlag(){
+  # unSandboxed execWithUrl (Exec=opera %U)
+  local doubleNoSandbox="$noSandBoxFlag $noSandBoxFlag"
+  $(findReplace "$doubleNoSandbox" "$noSandBoxFlag" "$1")
+}
+
+# Function to check if Opera Desktop Browser is aleady un-sandboxed
+function checkForUnSandBoxedOpera(){
+    # Get contents of desktop file
+    local operaDesktopFileContent=$(cat $operaDesktopPath)
+    # Check for un-sandboxed flag from Exec line
+    if [[ $operaDesktopFileContent == *"Exec=opera %U --no-sandbox"*
+        && $operaDesktopFileContent == *"Exec=opera --new-window --no-sandbox"*
+        && $operaDesktopFileContent == *"Exec=opera --private --no-sandbox"* ]]
+    then
+      operaFullyUnSandboxed=1 # Set fully un-sandboxed to True
+      operaPartiallyUnSandboxed=0 # Set partially un-sandboxed to False
+
+    # Check for un-sandboxed flag from Exec line
+    elif [[ $operaDesktopFileContent == *"Exec=opera %U --no-sandbox"*
+        || $operaDesktopFileContent == *"Exec=opera --new-window --no-sandbox"*
+        || $operaDesktopFileContent == *"Exec=opera --private --no-sandbox"* ]]
+    then
+      operaFullyUnSandboxed=0 # Set fully un-sandboxed to False
+      operaPartiallyUnSandboxed=1 # Set partially un-sandboxed to True
+    else
+      operaFullyUnSandboxed=0 # Set fully un-sandboxed to False
+      operaPartiallyUnSandboxed=0 # Set partially un-sandboxed to False
+    fi
+}
+
+# Function to check if Google Chrome Browser is aleady un-sandboxed
+function checkForUnSandBoxedGoogleChrome(){
+    # Get contents of desktop file
+    local googleChromeFileContent=$(cat $googleChromePath)
+    # Check for un-sandboxed flag from Exec line
+    if [[ $googleChromeFileContent == *"Exec=/usr/bin/google-chrome-stable %U --no-sandbox"*
+        && $googleChromeFileContent == *"Exec=/usr/bin/google-chrome-stable --no-sandbox"*
+        && $googleChromeFileContent == *"Exec=/usr/bin/google-chrome-stable --incognito --no-sandbox"* ]]
+    then
+      googleChromeFullyUnSandboxed=1 # Set fully un-sandboxed to True
+      googleChromePartiallyUnSandboxed=0 # Set partially un-sandboxed to False
+
+      # Check for un-sandboxed flag from Exec line
+    elif [[ $googleChromeFileContent == *"Exec=/usr/bin/google-chrome-stable %U --no-sandbox"*
+        || $googleChromeFileContent == *"Exec=/usr/bin/google-chrome-stable --no-sandbox"*
+        || $googleChromeFileContent == *"Exec=/usr/bin/google-chrome-stable --incognito --no-sandbox"* ]]
+    then
+      googleChromeFullyUnSandboxed=0 # Set fully un-sandboxed to False
+      googleChromePartiallyUnSandboxed=1 # Set partially un-sandboxed to True
+    else
+      googleChromeFullyUnSandboxed=0 # Set fully un-sandboxed to False
+      googleChromePartiallyUnSandboxed=0 # Set partially un-sandboxed to False
+    fi
+}
+
+# Function to check if Firefox ESR Browser is aleady un-sandboxed
+function checkForUnSandBoxedFirefoxESR(){
+    # Get contents of desktop file
+    local firefoxESRFileContent=$(cat $firefoxESRPath)
+    # Check for un-sandboxed flag from Exec line
+    if [[ $firefoxESRFileContent == *"Exec=/usr/lib/firefox-esr/firefox-esr %u --no-sandbox"* ]]
+    then
+        firefoxESRUnSandboxed=1 # Set fully un-sandboxed to True
+    else
+        firefoxESRUnSandboxed=0 # Set fully un-sandboxed to False
+    fi
+}
+
+# Function to check if Chromium Web Browser is aleady un-sandboxed
+function checkForUnSandBoxedChromiumWeb(){
+    # Get contents of desktop file
+    local chromiumWebFileContent=$(cat $chromiumWebPath)
+    # Check for un-sandboxed flag from Exec line
+    if [[ $chromiumWebFileContent == *"Exec=/usr/bin/chromium %U --no-sandbox"* ]]
+    then
+        chromiumWebUnSandboxed=1 # Set fully un-sandboxed to True
+    else
+        chromiumWebUnSandboxed=0 # Set fully un-sandboxed to False
+    fi
+}
+
 # Function to get a list of all installed browser
 function getAllInstalledBrowsers(){
     local -i listCount=0 # Numbers the list of installed browser
+    local browserUnSandboxedLabel="";
+    local -r partiallyUnSandboxedLabel="\e[1;33mPartially Un-Sandboxed.\e[0m"
+    local -r unSandboxedLabel="\e[1;33mUn-Sandboxed.\e[0m"
+    local -r willRunAsRoot="(Will run as root)"
+    local -r canPartiallyRunAsRoot="\e[1;31m(Can partially run as root)\e[0m"
+    local -r cantRunAsRoot="\e[1;31m(Cannot run as root)\e[0m"
 
     # Unset variables
     unset installedBrowsers listOfInstalledBrowsers
@@ -167,8 +262,22 @@ function getAllInstalledBrowsers(){
         listCount=$[listCount+1] # Update list count
         foundOpera=$[foundOpera + 1] # Set found Opera to 1
 
+        # Check if Opera Desktop Browser is already un-sandboxed
+        checkForUnSandBoxedOpera
+
+        if [ "$operaFullyUnSandboxed" -eq 1 ]
+        then
+            browserUnSandboxedLabel="$unSandboxedLabel $willRunAsRoot)"
+        elif [ "$operaPartiallyUnSandboxed" -eq 1 ]
+        then
+            browserUnSandboxedLabel="$partiallyUnSandboxedLabel $canPartiallyRunAsRoot)"
+        else
+            browserUnSandboxedLabel="$cantRunAsRoot"
+        fi
+
         # Adding Opera browser to the list of installed browsers
-        listOfInstalledBrowsers="${listOfInstalledBrowsers} \n\t$listCount. Opera Desktop Browser."
+        listOfInstalledBrowsers="${listOfInstalledBrowsers} \n\t\e[1;32m$listCount. Opera Desktop Browser. \e[0m $browserUnSandboxedLabel"
+        browserUnSandboxedLabel=""
     fi
 
     # Checking for Chrome UnSanboxing
@@ -177,8 +286,22 @@ function getAllInstalledBrowsers(){
         listCount=$[listCount+1] # Update list count
         foundChrome=$[foundChrome + 1] # Set found Chrome to 1
 
+        # Check if Google Chrome Browser is already un-sandboxed
+        checkForUnSandBoxedGoogleChrome
+
+        if [ "$googleChromeFullyUnSandboxed" -eq 1 ]
+        then
+            browserUnSandboxedLabel="$unSandboxedLabel $willRunAsRoot)"
+        elif [ "$googleChromePartiallyUnSandboxed" -eq 1 ]
+        then
+            browserUnSandboxedLabel="$partiallyUnSandboxedLabel $canPartiallyRunAsRoot)"
+        else
+            browserUnSandboxedLabel="$cantRunAsRoot"
+        fi
+
         # Adding Chrome browser to the list of installed browsers
-        listOfInstalledBrowsers="${listOfInstalledBrowsers} \n\t$listCount. Google Chrome Browser."
+        listOfInstalledBrowsers="${listOfInstalledBrowsers} \n\t\e[1;32m$listCount. Google Chrome Browser. \e[0m $browserUnSandboxedLabel"
+        browserUnSandboxedLabel=""
     fi
 
     # Checking for Firefox UnSanboxing
@@ -187,8 +310,19 @@ function getAllInstalledBrowsers(){
         listCount=$[listCount+1] # Update list count
         foundFirefoxEsr=$[foundFirefoxEsr + 1] # Set found Firefox to 1
 
+        # Check if Firefox ESR Browser is already un-sandboxed
+        checkForUnSandBoxedFirefoxESR
+
+        if [ "$firefoxESRUnSandboxed" -eq 1 ]
+        then
+            browserUnSandboxedLabel="$unSandboxedLabel $willRunAsRoot"
+        else
+            browserUnSandboxedLabel="$cantRunAsRoot"
+        fi
+
         # Adding Firefox ESR browser to list of installed browsers
-        listOfInstalledBrowsers="${listOfInstalledBrowsers} \n\t$listCount. Firefox ESR Browser."
+        listOfInstalledBrowsers="${listOfInstalledBrowsers} \n\t\e[1;32m$listCount. Firefox ESR Browser. \e[0m $browserUnSandboxedLabel"
+        browserUnSandboxedLabel=""
     fi
 
     # Checking for Chromium UnSanboxing
@@ -197,23 +331,34 @@ function getAllInstalledBrowsers(){
         listCount=$[listCount+1] # Update list count
         foundChromium=$[foundChromium + 1] # Set found opera to 1
 
-        # Adding Chromium browser to list of installed browsers
-        listOfInstalledBrowsers="${listOfInstalledBrowsers} \n\t$listCount. Chromium Web Browser."
+        #  Check if Chroimum Web Browser is already un-sandboxed
+        checkForUnSandBoxedChromiumWeb
 
-        # Get total number of installed and supported browsers
-        totalNoOfInstalledBrowsers=$((foundOpera+foundChrome+foundFirefoxEsr+foundChromium))
+        if [ "$chromiumWebUnSandboxed" -eq 1 ]
+        then
+            browserUnSandboxedLabel="$unSandboxedLabel $willRunAsRoot"
+        else
+            browserUnSandboxedLabel="$cantRunAsRoot"
+        fi
+
+        # Adding Chromium browser to list of installed browsers
+        listOfInstalledBrowsers="${listOfInstalledBrowsers} \n\t\e[1;32m$listCount. Chromium Web Browser. \e[0m $browserUnSandboxedLabel"
+        browserUnSandboxedLabel=""
     fi
+
+    # Get total number of installed and supported browsers
+    totalNoOfInstalledBrowsers=$((foundOpera+foundChrome+foundFirefoxEsr+foundChromium))
 
     if [ "$listCount" -gt 1 ]
     then # More that one browser installed
         listCount=$[listCount+1] # Update list count
         # Add option to unSandbox all at once
-        listOfInstalledBrowsers="${listOfInstalledBrowsers} \n\t$listCount. unSandbox all browsers."
+        listOfInstalledBrowsers="${listOfInstalledBrowsers} \n\t\e[1;32m$listCount. unSandbox all browsers."
     fi
 
     # Add option to cancel unSandboxation
     listCount=$[listCount+1] # Update list count
-    listOfInstalledBrowsers="${listOfInstalledBrowsers} \n\t$listCount. Exit."
+    listOfInstalledBrowsers="${listOfInstalledBrowsers} \n\t\e[1;32m$listCount. Exit."
     # Adding line break after list
     listOfInstalledBrowsers="${listOfInstalledBrowsers} \n"
 
@@ -222,13 +367,6 @@ function getAllInstalledBrowsers(){
       # Display list of installed browsers
       cPrint "YELLOW" "$listOfInstalledBrowsers"
     fi
-}
-
-# Function to remove repeated --no-sandbox flags
-function removeRepeatedNoSandBoxFlag(){
-  # unSandboxed execWithUrl (Exec=opera %U)
-  local doubleNoSandbox="$noSandBoxFlag $noSandBoxFlag"
-  $(findReplace "$doubleNoSandbox" "$noSandBoxFlag" "$1")
 }
 
 # Function to unSandbox Opera Desktop Browser
