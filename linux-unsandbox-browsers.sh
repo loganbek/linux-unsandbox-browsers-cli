@@ -21,8 +21,7 @@ declare noSandBoxFlag="--no-sandbox"; incognitoFlag="--incognito"
 # Variables to store un-sandbox states
 declare -i operaFullyUnSandboxed=0 operaPartiallyUnSandboxed=0
 declare -i googleChromeUnSandboxed=0 googleChromePartiallyUnSandboxed=0
-declare -i firefoxESRUnSandboxed=0
-declare -i chromiumWebUnSandboxed=0 chromiumWebPartiallyUnSandboxed=0
+declare -i firefoxESRUnSandboxed=0 chromiumWebUnSandboxed=0
 clear=clear # Command to clear terminal
 
 # Paths to browsers' desktop files
