@@ -1,7 +1,7 @@
 #!/bin/bash
 # Bash shell script to fix chrome on debian and ubuntu based distros
 # Author : David Kariuki
-1="" # Empty any parameter passed by user
+1="" # Empty any parameter passed by user during script exercution
 declare -r targetLinux="Debian Linux"
 declare -r scriptVersion="1.0" # Stores scripts version
 declare -l -r scriptName="linux-unsandbox-browsers" # Script file name (Set to lowers and read-only)
