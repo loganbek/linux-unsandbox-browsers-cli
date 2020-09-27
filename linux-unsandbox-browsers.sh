@@ -353,7 +353,7 @@ function getAllInstalledBrowsers(){
     then # More that one browser installed
         listCount=$[listCount+1] # Update list count
         # Add option to unSandbox all at once
-        listOfInstalledBrowsers="${listOfInstalledBrowsers} \n\t\e[1;32m$listCount. unSandbox all browsers."
+        listOfInstalledBrowsers="${listOfInstalledBrowsers} \n\t\e[1;32m$listCount. UnSandbox all browsers."
     fi
 
     # Add option to cancel unSandboxation
