@@ -1,11 +1,11 @@
 # Linux Un-Sandbox Browsers
-This shell script enables browsers to run as root in Debian and Ubuntu distros by un-sandboxing them.
+This shell script enables/disables browsers to run as root in Debian and Ubuntu distros by un-sandboxing/sandboxing them.
 
 This script supports the following browsers:
-  1. Opera Desktop Browser.
-  2. Google Chrome Browser.
-  3. Firefox ESR Browser.
-  4. Chromium Web Browser.
+  1. `Opera Desktop Browser`.
+  2. `Google Chrome Browser`.
+  3. `Firefox ESR Browser`.
+  4. `Chromium Web Browser`.
 
 \
 To use this script:
