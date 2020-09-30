@@ -37,28 +37,27 @@ function displayScriptInfo(){
 
 # Function to hold terminal with simple terminal animation
 function holdTerminal(){
-  local -r initialTime=`date +%s` # Get start time
-  local -r characters=" //--\\|| "
-  while :
-  do
-      local currentTime=`date +%s`
-      for (( i=0; i<${#characters}; i++ ))
-      do
-          sleep .1
-          echo -en "  ${characters:$i:1}" "\r"
-      done
-      difference=$((currentTime-initialTime))
-      if [[ "$difference" -eq $1 ]]
-      then
-          break
-      fi
-  done
+    local -r initialTime=`date +%s` # Get start time
+    local -r characters=" //--\\|| "
+    while :
+    do
+        local currentTime=`date +%s`
+        for (( i=0; i<${#characters}; i++ ))
+        do
+            sleep .1
+            echo -en "  ${characters:$i:1}" "\r"
+        done
+        difference=$((currentTime-initialTime))
+        if [[ "$difference" -eq $1 ]]
+        then
+            break
+        fi
+    done
 }
 
 # Function to format time from seconds to days:hours:minutes:seconds
 function formatTime() {
-    local inputSeconds=$1; local minutes=0
-    local hour=0; local day=0
+    local inputSeconds=$1 local minutes=0 hour=0 day=0
     if((inputSeconds>59))
     then
         ((seconds=inputSeconds%60))
@@ -102,14 +101,14 @@ function isUserRoot(){
 
 # Function to find and replace using sed
 function findReplace(){
-  sed -i -e "s@$1@$2@g" $3
+    sed -i -e "s@$1@$2@g" $3
 }
 
 # Function to display success message once a browser is unsandboxed
 function successMessage(){
-  cPrint "GREEN" "$1 un-sandboxed successfuly. $1 will now run as root.\n"
-  holdTerminal 3 # Hold
-  sectionBreak
+    cPrint "GREEN" "$1 un-sandboxed successfuly. $1 will now run as root.\n"
+    holdTerminal 3 # Hold
+    sectionBreak
 }
 
 # Function to exit script with custom coloured message
@@ -146,6 +145,7 @@ function removeRepeatedNoSandBoxFlag(){
 function checkForUnSandBoxedOpera(){
     # Get contents of desktop file
     local operaDesktopFileContent=$(cat $operaDesktopPath)
+
     # Check for un-sandboxed flag from Exec line
     if [[ $operaDesktopFileContent == *"Exec=opera %U --no-sandbox"*
         && $operaDesktopFileContent == *"Exec=opera --new-window --no-sandbox"*
@@ -171,6 +171,7 @@ function checkForUnSandBoxedOpera(){
 function checkForUnSandBoxedGoogleChrome(){
     # Get contents of desktop file
     local googleChromeFileContent=$(cat $googleChromePath)
+
     # Check for un-sandboxed flag from Exec line
     if [[ $googleChromeFileContent == *"Exec=/usr/bin/google-chrome-stable %U --no-sandbox"*
         && $googleChromeFileContent == *"Exec=/usr/bin/google-chrome-stable --no-sandbox"*
@@ -196,6 +197,7 @@ function checkForUnSandBoxedGoogleChrome(){
 function checkForUnSandBoxedFirefoxESR(){
     # Get contents of desktop file
     local firefoxESRFileContent=$(cat $firefoxESRPath)
+
     # Check for un-sandboxed flag from Exec line
     if [[ $firefoxESRFileContent == *"Exec=/usr/lib/firefox-esr/firefox-esr %u --no-sandbox"* ]]
     then
@@ -209,6 +211,7 @@ function checkForUnSandBoxedFirefoxESR(){
 function checkForUnSandBoxedChromiumWeb(){
     # Get contents of desktop file
     local chromiumWebFileContent=$(cat $chromiumWebPath)
+
     # Check for un-sandboxed flag from Exec line
     if [[ $chromiumWebFileContent == *"Exec=/usr/bin/chromium %U --no-sandbox"* ]]
     then
@@ -221,7 +224,7 @@ function checkForUnSandBoxedChromiumWeb(){
 # Function to get a list of all installed browser
 function getAllInstalledBrowsers(){
     local -i listCount=0 # Numbers the list of installed browser
-    local browserUnSandboxedLabel="";
+    local browserUnSandboxedLabel=""
     local -r partiallyUnSandboxedLabel="\e[1;33mPartially Un-Sandboxed.\e[0m"
     local -r unSandboxedLabel="\e[1;33mUn-Sandboxed.\e[0m"
     local -r willRunAsRoot="(Will run as root)"
@@ -236,17 +239,28 @@ function getAllInstalledBrowsers(){
     installedBrowsers=$(ls -l /usr/share/applications/)
 
     # Set found Opera to 1 if installed
-    if [[ $installedBrowsers == *"opera"* ]];
-    then foundOpera=$[foundOpera + 1]; fi
+    if [[ $installedBrowsers == *"opera"* ]]
+    then
+        foundOpera=$[foundOpera + 1]
+    fi
+
     # Set found Chrome to 1 if installed
-    if [[ $installedBrowsers == *"google-chrome"* ]];
-    then foundChrome=$[foundChrome + 1]; fi
+    if [[ $installedBrowsers == *"google-chrome"* ]]
+    then
+        foundChrome=$[foundChrome + 1]
+    fi
+
     # Set found Firefox to 1 if installed
-    if [[ $installedBrowsers == *"firefox-esr"* ]];
-    then foundFirefoxEsr=$[foundFirefoxEsr + 1]; fi
+    if [[ $installedBrowsers == *"firefox-esr"* ]]
+    then
+        foundFirefoxEsr=$[foundFirefoxEsr + 1]
+    fi
+
     # Set found opera to 1 if installed
-    if [[ $installedBrowsers == *"chromium"* ]];
-    then foundChromium=$[foundChromium + 1]; fi
+    if [[ $installedBrowsers == *"chromium"* ]]
+    then
+        foundChromium=$[foundChromium + 1]
+    fi
 
     # Get total number of installed and supported browsers
     totalNoOfInstalledBrowsers=$((foundOpera+foundChrome+foundFirefoxEsr+foundChromium))
@@ -346,8 +360,8 @@ function getAllInstalledBrowsers(){
 
     if [ "$1" == "--list" ]
     then
-      # Display list of installed browsers
-      cPrint "YELLOW" "$listOfInstalledBrowsers"
+        # Display list of installed browsers
+        cPrint "YELLOW" "$listOfInstalledBrowsers"
     fi
 }
 
@@ -379,10 +393,13 @@ function unSandboxOperaDesktopBrowser(){
     # Remove duplicate --no-sandbox commands incase of multiple script re-run
     repeatedExecNewWindow="$execNewWindow $noSandBoxFlag $noSandBoxFlag"
     $(findReplace "$repeatedExecNewWindow" "$execNewWindowNoSandbox" "$operaDesktopPath")
+
     repeatedExecWithUrl="$execWithUrl $noSandBoxFlag $noSandBoxFlag"
     $(findReplace "$repeatedExecWithUrl" "$execWithUrlNoSandbox" "$operaDesktopPath")
+
     repeatedExecPrivate="$execPrivate $noSandBoxFlag $noSandBoxFlag"
     $(findReplace "$repeatedExecPrivate" "$execPrivateNoSandbox" "$operaDesktopPath")
+
     removeRepeatedNoSandBoxFlag "$operaDesktopPath"
 
     # Display Opera Desktop Browser unsandboxed message
@@ -422,12 +439,15 @@ function unSandboxGoogleChromeBrowser(){
     # Remove duplicate --no-sandbox commands incase of multiple script re-run
     repeatedExecNoUrl="$execNoUrl $noSandBoxFlag $noSandBoxFlag"
     $(findReplace "$repeatedExecNoUrl" "$execNoUrlNoSandbox" "$googleChromePath")
+
     repeatedExecWithUrl="$execNoUrl %U $noSandBoxFlag $noSandBoxFlag"
     execWithUrlNoSandbox="$execNoUrl %U $noSandBoxFlag"
     $(findReplace "$repeatedExecWithUrl" "$execWithUrlNoSandbox" "$googleChromePath")
+
     repeatedExecIncognito="$execNoUrl $incognitoFlag $noSandBoxFlag $noSandBoxFlag"
     execIncognitoNoSandbox="$execNoUrl $incognitoFlag $noSandBoxFlag"
     $(findReplace "$repeatedExecIncognito" "$execIncognitoNoSandbox" "$googleChromePath")
+
     removeRepeatedNoSandBoxFlag "$googleChromePath"
 
     # Display Chrome Browser unsandboxed message
@@ -450,6 +470,7 @@ function unSandboxFirefoxESRBrowser(){
     # Remove duplicate --no-sandbox commands incase of multiple script re-run
     repeatedexecWithUrl="$execWithUrl $noSandBoxFlag $noSandBoxFlag"
     $(findReplace "$repeatedexecWithUrl" "$execWithUrlNoSandbox" "$firefoxESRPath")
+
     removeRepeatedNoSandBoxFlag "$firefoxESRPath"
 
     # Display Firefox ESR Browser unsandboxed message
@@ -458,24 +479,25 @@ function unSandboxFirefoxESRBrowser(){
 
 # Function to unSandbox Chromium Web Browser
 function unSandboxChromiumWebBrowser(){
-  cPrint "YELLOW" "Enabling/UnSandboxing $chromiumWebBrowser."
-  holdTerminal 2 # Hold
+    cPrint "YELLOW" "Enabling/UnSandboxing $chromiumWebBrowser."
+    holdTerminal 2 # Hold
 
-  # Find and replace (Exec=/usr/bin/chromium %U) with
-  # (Exec=/usr/bin/chromium %U --no-sandbox)
-  local execWithUrl="Exec=/usr/bin/chromium %U"
+    # Find and replace (Exec=/usr/bin/chromium %U) with
+    # (Exec=/usr/bin/chromium %U --no-sandbox)
+    local execWithUrl="Exec=/usr/bin/chromium %U"
 
-  # unSandboxed execWithUrl (Exec=/usr/bin/chromium %U)
-  local execWithUrlNoSandbox="$execWithUrl $noSandBoxFlag"
-  $(findReplace "$execWithUrl" "$execWithUrlNoSandbox" "$chromiumWebPath")
+    # unSandboxed execWithUrl (Exec=/usr/bin/chromium %U)
+    local execWithUrlNoSandbox="$execWithUrl $noSandBoxFlag"
+    $(findReplace "$execWithUrl" "$execWithUrlNoSandbox" "$chromiumWebPath")
 
-  # Remove duplicate --no-sandbox commands incase of multiple script re-run
-  repeatedexecWithUrl="$execWithUrl $noSandBoxFlag $noSandBoxFlag"
-  $(findReplace "$repeatedexecWithUrl" "$execWithUrlNoSandbox" "$chromiumWebPath")
-  removeRepeatedNoSandBoxFlag "$chromiumWebPath"
+    # Remove duplicate --no-sandbox commands incase of multiple script re-run
+    repeatedexecWithUrl="$execWithUrl $noSandBoxFlag $noSandBoxFlag"
+    $(findReplace "$repeatedexecWithUrl" "$execWithUrlNoSandbox" "$chromiumWebPath")
 
-  # Display Chromium Web Browser unsandboxed message
-  successMessage "$chromiumWebBrowser"
+    removeRepeatedNoSandBoxFlag "$chromiumWebPath"
+
+    # Display Chromium Web Browser unsandboxed message
+    successMessage "$chromiumWebBrowser"
 }
 
 # Function to sandbox all browsers
@@ -574,86 +596,92 @@ function switchSandboxUnSandboxMenuChoice(){
     then # Option : Exit script
         ${clear} # Clear terminal
     fi
-  sleep 1 # Hold loop
+
+    sleep 1 # Hold loop
 }
 
 # Function to select sandbox or unsandbox options
 function sandboxUnSandboxMenu(){
-  while true
-  do # Start infinite loop
-      ${clear} # Clear terminal
+    while true
+    do # Start infinite loop
+        ${clear} # Clear terminal
 
-      getAllInstalledBrowsers # Get all installed browsers
+        getAllInstalledBrowsers # Get all installed browsers
 
-      # Unset required variables to prevent duplicates during loop
-      unset unSandboxSandboxMenu listCount
+        # Unset required variables to prevent duplicates during loop
+        unset unSandboxSandboxMenu listCount
 
-      # Prompt user to select sandbox or unsandbox
-      local unSandboxSandboxMenu="Select an option below to proceed."
-      local -i listcount=0 # Menu list count
+        # Prompt user to select sandbox or unsandbox
+        local unSandboxSandboxMenu="Select an option below to proceed."
+        local -i listcount=0 # Menu list count
 
-      # Opera Desktop Browser
-      if [ "$1" == "$operaDesktopBrowser" ]
-      then
-          listCount=$[listCount+1]
-          if [ "$operaFullyUnSandboxed" -eq 1 ]
-          then # Sandbox
-              unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $disableSandbox $1."
-          elif [ "$operaPartiallyUnSandboxed" -eq 1 ]
-          then # Partial Un-Sandbox (unSandbox fully(--no-sandbox) or Sandbox)
-              unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $enableUnsandbox $1."
-              unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $disableSandbox $1."
-          else # None UnSandboxed
-              unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $enableUnsandbox $1."
-          fi
-      # Google Chrome Browser
-      elif [ "$1" == "$googleChromeBrowser" ]
-      then
-          listCount=$[listCount+1]
-          if [ "$googleChromeFullyUnSandboxed" -eq 1 ]
-          then # Sandbox
-              unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $disableSandbox $1."
-          elif [ "$googleChromePartiallyUnSandboxed" -eq 1 ]
-          then # Partial Un-Sandbox (unSandbox fully(--no-sandbox) or Sandbox)
-              unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $enableUnsandbox $1."
-              unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $disableSandbox $1."
-          else # None UnSandboxed
-              unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $enableUnsandbox $1."
-          fi
-      # Firefox ESR Browser
-      elif [ "$1" == "$firefoxEsrBrowser" ]
-      then
-          listCount=$[listCount+1]
-          if [ "$firefoxESRUnSandboxed" -eq 1 ]
-          then
-              unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $disableSandbox $1."
-          else
-              unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $enableUnsandbox $1."
-          fi
-      # Chromium Web Browser
-      elif [ "$1" == "$chromiumWebBrowser" ]
-      then
-          listCount=$[listCount+1]
-          if [ "$chromiumWebUnSandboxed" -eq 1 ]
-          then
-              unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $disableSandbox $1."
-          else
-              unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $enableUnsandbox $1."
-          fi
-      fi
+        # Opera Desktop Browser
+        if [ "$1" == "$operaDesktopBrowser" ]
+        then
+            listCount=$[listCount+1]
+            if [ "$operaFullyUnSandboxed" -eq 1 ]
+            then # Sandbox
+                unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $disableSandbox $1."
+            elif [ "$operaPartiallyUnSandboxed" -eq 1 ]
+            then # Partial Un-Sandbox (unSandbox fully(--no-sandbox) or Sandbox)
+                unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $enableUnsandbox $1."
+                unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $disableSandbox $1."
+            else # None UnSandboxed
+                unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $enableUnsandbox $1."
+            fi
 
-      listCount=$[listCount+1]
-      unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. Back"
+        # Google Chrome Browser
+        elif [ "$1" == "$googleChromeBrowser" ]
+        then
+            listCount=$[listCount+1]
+            if [ "$googleChromeFullyUnSandboxed" -eq 1 ]
+            then # Sandbox
+                unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $disableSandbox $1."
+            elif [ "$googleChromePartiallyUnSandboxed" -eq 1 ]
+            then # Partial Un-Sandbox (unSandbox fully(--no-sandbox) or Sandbox)
+                unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $enableUnsandbox $1."
+                unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $disableSandbox $1."
+            else # None UnSandboxed
+                unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $enableUnsandbox $1."
+            fi
 
-      cPrint "YELLOW" "$unSandboxSandboxMenu"
-      read -p ' option: ' sandboxChoice
-      sandboxChoice=${sandboxChoice,,} # Convert to lowercase
-      # Display choice
-      cPrint "GREEN" " You chose : $sandboxChoice\n" |& tee -a $logFileName
+        # Firefox ESR Browser
+        elif [ "$1" == "$firefoxEsrBrowser" ]
+        then
+            listCount=$[listCount+1]
+            if [ "$firefoxESRUnSandboxed" -eq 1 ]
+            then
+                unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $disableSandbox $1."
+            else
+                unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $enableUnsandbox $1."
+            fi
 
-      switchSandboxUnSandboxMenuChoice "$sandboxChoice" "$1"
-      break
-  done
+        # Chromium Web Browser
+        elif [ "$1" == "$chromiumWebBrowser" ]
+        then
+            listCount=$[listCount+1]
+            if [ "$chromiumWebUnSandboxed" -eq 1 ]
+            then
+                unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $disableSandbox $1."
+            else
+                unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $enableUnsandbox $1."
+            fi
+        fi
+
+        listCount=$[listCount+1]
+        unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. Back"
+
+        cPrint "YELLOW" "$unSandboxSandboxMenu"
+        read -p ' option: ' sandboxChoice
+        sandboxChoice=${sandboxChoice,,} # Convert to lowercase
+
+        # Display choice
+        cPrint "GREEN" " You chose : $sandboxChoice\n" |& tee -a $logFileName
+
+        switchSandboxUnSandboxMenuChoice "$sandboxChoice" "$1"
+        break
+
+    done
 }
 
 # Function to switch main menu selected choice
@@ -685,6 +713,7 @@ function switchMainMenuChoice(){
         ${clear} # Clear terminal
         exitScript # ExitScript
     fi
+
     sleep 1 # Hold loop
 }
 
@@ -765,9 +794,9 @@ function displayInstalledBrowsersMenu(){
             # Switch selected choice and unSandbox
             switchMainMenuChoice "$choice"
         else
-          cPrint "RED" "You have not installed any supported browsers. This script works with:\n\t1. $operaDesktopBrowser.\n\t2. $googleChromeBrowser.\n\t3. $firefoxEsrBrowser.\n\t4. $chromiumWebBrowser."
-          holdTerminal 15 # Hold for user to read
-          exitScript # Exit script
+            cPrint "RED" "You have not installed any supported browsers. This script works with:\n\t1. $operaDesktopBrowser.\n\t2. $googleChromeBrowser.\n\t3. $firefoxEsrBrowser.\n\t4. $chromiumWebBrowser."
+            holdTerminal 15 # Hold for user to read
+            exitScript # Exit script
         fi
     done
 }
