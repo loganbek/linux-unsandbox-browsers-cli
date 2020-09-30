@@ -1,25 +1,5 @@
 #!/bin/bash
-# Bash shell script to fix chrome on debian and ubuntu based distros
-# Author : David Kariuki
-1="" # Empty any parameter passed by user during script exercution
-declare -r targetLinux="Debian Linux"
-declare -r scriptVersion="2.0" # Stores scripts version
-declare -l -r scriptName="linux-unsandbox-browsers" # Script file name (Set to lowers and read-only)
-declare -l -r networkTestUrl="www.google.com" # NetworkTestUrl (Set to lowers and read-only)
-declare -l startTime="" # Stores start time of execution
-declare -l totalExecutionTime="" # Total execution time in days:hours:minutes:seconds
-declare listOfInstalledBrowsers="" # List of all installed browsers
-declare unSandboxSandboxMenu="" # List of unsandbox and sandbox options
-declare -i totalNoOfInstalledBrowsers=0 # Total number of supported installed browsers
-declare -i foundOpera=0 foundChrome=0 foundFirefoxEsr=0 foundChromium=0
-declare operaDesktopBrowser="Opera Desktop Browser"
-declare googleChromeBrowser="Google Chrome Browser"
-declare firefoxEsrBrowser="Firefox ESR Browser"
-declare chromiumWebBrowser="Chromium Web Browser"
-declare -r numberExpression='^[0-9]+$' # Number expression
-declare -r noSandBoxFlag="--no-sandbox" incognitoFlag="--incognito"
-declare -r disableSandbox="Disable/Sandbox"
-declare -r enableUnsandbox="Enable/Unsandbox"
+# Copyright (c) 2020 by David Kariuki (dk). All Rights Reserved.
 
 # Variables to store un-sandbox states
 declare -i operaFullyUnSandboxed=0 operaPartiallyUnSandboxed=0
