@@ -15,10 +15,3 @@ To use this script:
   4. Open terminal at the files location by right clicking and selecting *`Open in terminal`*. You can as well launch your terminal and navigate to where the downloaded file is.
   5. Type **`chmod +x linux-unsandbox-browsers.sh`** and click on `enter key` to make the script executable.
   6. Type **`./linux-unsandbox-browsers.sh`** to run the script.
-
-\
-\
-\
-<a href="https://www.buymeacoffee.com/davidkariuki" target="_blank">
-    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Kindly Buy Me A Coffee" style="height: 15px !important;width: 55px !important;"/>
-</a>
