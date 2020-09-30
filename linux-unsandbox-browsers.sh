@@ -38,7 +38,7 @@ function displayScriptInfo(){
 
 # Function to hold terminal with simple terminal animation
 function holdTerminal(){
-    local -r initialTime=`date +%s` # Get start time
+    local -r initialTime=`date +%s` # Get start time 
     local -r characters=" //--\\|| "
     while :
     do
