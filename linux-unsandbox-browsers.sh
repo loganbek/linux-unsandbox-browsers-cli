@@ -1,5 +1,6 @@
-#!/bin/bash
 # Copyright (c) 2020 by David Kariuki (dk). All Rights Reserved.
+
+#!/bin/bash
 
 # Variables to store un-sandbox states
 declare -i operaFullyUnSandboxed=0 operaPartiallyUnSandboxed=0
