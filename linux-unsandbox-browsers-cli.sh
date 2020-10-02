@@ -802,11 +802,12 @@ function displayInstalledBrowsersMenu(){
     done
 }
 
+# Function to display main menu
 function displayMainMenu(){
     startTime=`date +%s` # Get start time
     ${clear} # Clear terminal
 
-    echo ""; cPrint "RED" "Hello $USER!!"
+    echo ""; cPrint "RED" "Running as $USER."
     cPrint "YELLOW"	"This script will help you enable different browsers to run as root on your $targetLinux."
     holdTerminal 7 # Hold for user to read
 
