@@ -2,22 +2,30 @@
 
 #!/bin/bash
 
+
 # Bash shell script to unsandbox/sandbox browsers on debian and ubuntu based distros
 1="" # Empty any parameter passed by user during script exercution
 declare -r targetLinux="Debian Linux"
-declare -r scriptVersion="2.0" # Stores scripts version
+declare -r scriptVersion="3.0" # Stores scripts version
 declare -l -r scriptName="linux-unsandbox-browsers" # Script file name (Set to lowers and read-only)
 declare -l -r networkTestUrl="www.google.com" # NetworkTestUrl (Set to lowers and read-only)
+
 declare -l startTime="" # Stores start time of execution
 declare -l totalExecutionTime="" # Total execution time in days:hours:minutes:seconds
-declare listOfInstalledBrowsers="" # List of all installed browsers
+
+declare listOfInstalledBrowsersMenu="" # List of all installed browsers
 declare unSandboxSandboxMenu="" # List of unsandbox and sandbox options
 declare -i totalNoOfInstalledBrowsers=0 # Total number of supported installed browsers
-declare -i foundOpera=0 foundChrome=0 foundFirefoxEsr=0 foundChromium=0
-declare operaDesktopBrowser="Opera Desktop Browser"
-declare googleChromeBrowser="Google Chrome Browser"
-declare firefoxEsrBrowser="Firefox ESR Browser"
-declare chromiumWebBrowser="Chromium Web Browser"
+
+declare -i foundOperaDesktop=0 foundGoogleChrome=0 foundFirefoxEsr=0
+declare -i foundChromiumWeb=0 foundFalkonKde=0
+
+declare -r operaDesktopBrowser="Opera Desktop Browser"
+declare -r googleChromeBrowser="Google Chrome Browser"
+declare -r firefoxEsrBrowser="Firefox ESR Browser"
+declare -r chromiumWebBrowser="Chromium Web Browser"
+declare -r falkonKdeBrowser="Falkon KDE Browser"
+
 declare -r numberExpression='^[0-9]+$' # Number expression
 declare -r noSandBoxFlag="--no-sandbox" incognitoFlag="--incognito"
 declare -r disableSandbox="Disable/Sandbox"
@@ -27,6 +35,8 @@ declare -r enableUnsandbox="Enable/Unsandbox"
 declare -i operaFullyUnSandboxed=0 operaPartiallyUnSandboxed=0
 declare -i googleChromeUnSandboxed=0 googleChromePartiallyUnSandboxed=0
 declare -i firefoxESRUnSandboxed=0 chromiumWebUnSandboxed=0
+declare -i falkonFullyUnSandboxed=0 falkonPartiallyUnSandboxed=0
+
 clear=clear # Command to clear terminal
 
 # Paths to browsers' desktop files
@@ -34,6 +44,7 @@ operaDesktopPath=/usr/share/applications/opera.desktop
 googleChromePath=/usr/share/applications/google-chrome.desktop
 firefoxESRPath=/usr/share/applications/firefox-esr.desktop
 chromiumWebPath=/usr/share/applications/chromium.desktop
+falkonKdePath=/usr/share/applications/org.kde.falkon.desktop
 
 # Function to create a custom coloured print
 function cPrint(){
@@ -114,7 +125,7 @@ function isUserRoot(){
     local -l -r user=$USER # Set user variable as lowercase
     if [ "$user" != 'root' ]
     then
-        cPrint "RED" "This script works fully when run as root.\n Please run it as root to avoid issues/errors.\n"
+        cPrint "RED" "This script works fully when run as root.\n Please run it as root.\n"
         holdTerminal 4 # Hold for user to read
         exitScript --end
     else return $(true)
@@ -166,20 +177,20 @@ function removeRepeatedNoSandBoxFlag(){
 # Function to check if Opera Desktop Browser is aleady un-sandboxed
 function checkForUnSandBoxedOpera(){
     # Get contents of desktop file
-    local operaDesktopFileContent=$(cat $operaDesktopPath)
+    local operaDesktopFileContents=$(cat $operaDesktopPath)
 
     # Check for un-sandboxed flag from Exec line
-    if [[ $operaDesktopFileContent == *"Exec=opera %U --no-sandbox"*
-        && $operaDesktopFileContent == *"Exec=opera --new-window --no-sandbox"*
-        && $operaDesktopFileContent == *"Exec=opera --private --no-sandbox"* ]]
+    if [[ $operaDesktopFileContents == *"Exec=opera %U --no-sandbox"*
+        && $operaDesktopFileContents == *"Exec=opera --new-window --no-sandbox"*
+        && $operaDesktopFileContents == *"Exec=opera --private --no-sandbox"* ]]
     then
       operaFullyUnSandboxed=1 # Set fully un-sandboxed to True
       operaPartiallyUnSandboxed=0 # Set partially un-sandboxed to False
 
     # Check for un-sandboxed flag from Exec line
-    elif [[ $operaDesktopFileContent == *"Exec=opera %U --no-sandbox"*
-        || $operaDesktopFileContent == *"Exec=opera --new-window --no-sandbox"*
-        || $operaDesktopFileContent == *"Exec=opera --private --no-sandbox"* ]]
+    elif [[ $operaDesktopFileContents == *"Exec=opera %U --no-sandbox"*
+        || $operaDesktopFileContents == *"Exec=opera --new-window --no-sandbox"*
+        || $operaDesktopFileContents == *"Exec=opera --private --no-sandbox"* ]]
     then
       operaFullyUnSandboxed=0 # Set fully un-sandboxed to False
       operaPartiallyUnSandboxed=1 # Set partially un-sandboxed to True
@@ -192,20 +203,20 @@ function checkForUnSandBoxedOpera(){
 # Function to check if Google Chrome Browser is aleady un-sandboxed
 function checkForUnSandBoxedGoogleChrome(){
     # Get contents of desktop file
-    local googleChromeFileContent=$(cat $googleChromePath)
+    local googleChromeFileContents=$(cat $googleChromePath)
 
     # Check for un-sandboxed flag from Exec line
-    if [[ $googleChromeFileContent == *"Exec=/usr/bin/google-chrome-stable %U --no-sandbox"*
-        && $googleChromeFileContent == *"Exec=/usr/bin/google-chrome-stable --no-sandbox"*
-        && $googleChromeFileContent == *"Exec=/usr/bin/google-chrome-stable --incognito --no-sandbox"* ]]
+    if [[ $googleChromeFileContents == *"Exec=/usr/bin/google-chrome-stable %U --no-sandbox"*
+        && $googleChromeFileContents == *"Exec=/usr/bin/google-chrome-stable --no-sandbox"*
+        && $googleChromeFileContents == *"Exec=/usr/bin/google-chrome-stable --incognito --no-sandbox"* ]]
     then
       googleChromeFullyUnSandboxed=1 # Set fully un-sandboxed to True
       googleChromePartiallyUnSandboxed=0 # Set partially un-sandboxed to False
 
       # Check for un-sandboxed flag from Exec line
-    elif [[ $googleChromeFileContent == *"Exec=/usr/bin/google-chrome-stable %U --no-sandbox"*
-        || $googleChromeFileContent == *"Exec=/usr/bin/google-chrome-stable --no-sandbox"*
-        || $googleChromeFileContent == *"Exec=/usr/bin/google-chrome-stable --incognito --no-sandbox"* ]]
+    elif [[ $googleChromeFileContents == *"Exec=/usr/bin/google-chrome-stable %U --no-sandbox"*
+        || $googleChromeFileContents == *"Exec=/usr/bin/google-chrome-stable --no-sandbox"*
+        || $googleChromeFileContents == *"Exec=/usr/bin/google-chrome-stable --incognito --no-sandbox"* ]]
     then
       googleChromeFullyUnSandboxed=0 # Set fully un-sandboxed to False
       googleChromePartiallyUnSandboxed=1 # Set partially un-sandboxed to True
@@ -218,10 +229,10 @@ function checkForUnSandBoxedGoogleChrome(){
 # Function to check if Firefox ESR Browser is aleady un-sandboxed
 function checkForUnSandBoxedFirefoxESR(){
     # Get contents of desktop file
-    local firefoxESRFileContent=$(cat $firefoxESRPath)
+    local firefoxESRFileContents=$(cat $firefoxESRPath)
 
     # Check for un-sandboxed flag from Exec line
-    if [[ $firefoxESRFileContent == *"Exec=/usr/lib/firefox-esr/firefox-esr %u --no-sandbox"* ]]
+    if [[ $firefoxESRFileContents == *"Exec=/usr/lib/firefox-esr/firefox-esr %u --no-sandbox"* ]]
     then
         firefoxESRUnSandboxed=1 # Set fully un-sandboxed to True
     else
@@ -232,14 +243,42 @@ function checkForUnSandBoxedFirefoxESR(){
 # Function to check if Chromium Web Browser is aleady un-sandboxed
 function checkForUnSandBoxedChromiumWeb(){
     # Get contents of desktop file
-    local chromiumWebFileContent=$(cat $chromiumWebPath)
+    local chromiumWebFileContents=$(cat $chromiumWebPath)
 
     # Check for un-sandboxed flag from Exec line
-    if [[ $chromiumWebFileContent == *"Exec=/usr/bin/chromium %U --no-sandbox"* ]]
+    if [[ $chromiumWebFileContents == *"Exec=/usr/bin/chromium %U --no-sandbox"* ]]
     then
         chromiumWebUnSandboxed=1 # Set fully un-sandboxed to True
     else
         chromiumWebUnSandboxed=0 # Set fully un-sandboxed to False
+    fi
+}
+
+# Function to check if Opera Desktop Browser is aleady un-sandboxed
+function checkForUnSandBoxedFalkon(){
+    # Get contents of desktop file
+    local falkonKdeFileContents=$(cat $falkonKdePath)
+
+    # Check for un-sandboxed flag from Exec line
+    if [[ $falkonKdeFileContents == *"Exec=falkon %u --no-sandbox"*
+        && $falkonKdeFileContents == *"Exec=falkon --new-tab --no-sandbox"*
+        && $falkonKdeFileContents == *"Exec=falkon --new-window --no-sandbox"*
+        && $falkonKdeFileContents == *"Exec=falkon --private-browsing --no-sandbox"* ]]
+    then
+      falkonFullyUnSandboxed=1 # Set fully un-sandboxed to True
+      falkonPartiallyUnSandboxed=0 # Set partially un-sandboxed to False
+
+    # Check for un-sandboxed flag from Exec line
+    elif [[ $falkonKdeFileContents == *"Exec=falkon %u --no-sandbox"*
+        || $falkonKdeFileContents == *"Exec=falkon --new-tab --no-sandbox"*
+        || $falkonKdeFileContents == *"Exec=falkon --new-window --no-sandbox"*
+        || $falkonKdeFileContents == *"Exec=falkon --private-browsing --no-sandbox"* ]]
+    then
+      falkonFullyUnSandboxed=0 # Set fully un-sandboxed to False
+      falkonPartiallyUnSandboxed=1 # Set partially un-sandboxed to True
+    else
+      falkonFullyUnSandboxed=0 # Set fully un-sandboxed to False
+      falkonPartiallyUnSandboxed=0 # Set partially un-sandboxed to False
     fi
 }
 
@@ -254,8 +293,9 @@ function getAllInstalledBrowsers(){
     local -r cantRunAsRoot="\e[1;31m(Cannot run as root)\e[0m"
 
     # Unset variables
-    unset installedBrowsers listOfInstalledBrowsers
-    unset foundOpera foundChrome foundFirefoxEsr foundChromium
+    unset installedBrowsers listOfInstalledBrowsersMenu
+    unset foundOperaDesktop foundGoogleChrome foundFirefoxEsr
+    unset foundChromiumWeb foundFalkonKde
 
     # Get all installed browsers
     installedBrowsers=$(ls -l /usr/share/applications/)
@@ -263,13 +303,13 @@ function getAllInstalledBrowsers(){
     # Set found Opera to 1 if installed
     if [[ $installedBrowsers == *"opera"* ]]
     then
-        foundOpera=$[foundOpera + 1]
+        foundOperaDesktop=$[foundOperaDesktop + 1]
     fi
 
     # Set found Chrome to 1 if installed
     if [[ $installedBrowsers == *"google-chrome"* ]]
     then
-        foundChrome=$[foundChrome + 1]
+        foundGoogleChrome=$[foundGoogleChrome + 1]
     fi
 
     # Set found Firefox to 1 if installed
@@ -281,12 +321,12 @@ function getAllInstalledBrowsers(){
     # Set found opera to 1 if installed
     if [[ $installedBrowsers == *"chromium"* ]]
     then
-        foundChromium=$[foundChromium + 1]
+        foundChromiumWeb=$[foundChromiumWeb + 1]
     fi
 
     # Get total number of installed and supported browsers
-    totalNoOfInstalledBrowsers=$((foundOpera+foundChrome+foundFirefoxEsr+foundChromium))
-    listOfInstalledBrowsers="\n Found a total of $totalNoOfInstalledBrowsers browsers.\n"
+    totalNoOfInstalledBrowsers=$((foundOperaDesktop+foundGoogleChrome+foundFirefoxEsr+foundChromiumWeb))
+    listOfInstalledBrowsersMenu="\n Found a total of $totalNoOfInstalledBrowsers browsers.\n"
 
     # Checking for Opera UnSanboxing
     if [[ $installedBrowsers == *"opera"* ]]
@@ -307,7 +347,7 @@ function getAllInstalledBrowsers(){
         fi
 
         # Adding Opera browser to the list of installed browsers
-        listOfInstalledBrowsers="${listOfInstalledBrowsers} \n\t\e[1;32m$listCount. Opera Desktop Browser. \e[0m $browserUnSandboxedLabel"
+        listOfInstalledBrowsersMenu="${listOfInstalledBrowsersMenu} \n\t\e[1;32m$listCount. Opera Desktop Browser. \e[0m $browserUnSandboxedLabel"
         browserUnSandboxedLabel=""
     fi
 
@@ -330,7 +370,7 @@ function getAllInstalledBrowsers(){
         fi
 
         # Adding Chrome browser to the list of installed browsers
-        listOfInstalledBrowsers="${listOfInstalledBrowsers} \n\t\e[1;32m$listCount. Google Chrome Browser. \e[0m $browserUnSandboxedLabel"
+        listOfInstalledBrowsersMenu="${listOfInstalledBrowsersMenu} \n\t\e[1;32m$listCount. Google Chrome Browser. \e[0m $browserUnSandboxedLabel"
         browserUnSandboxedLabel=""
     fi
 
@@ -350,7 +390,7 @@ function getAllInstalledBrowsers(){
         fi
 
         # Adding Firefox ESR browser to list of installed browsers
-        listOfInstalledBrowsers="${listOfInstalledBrowsers} \n\t\e[1;32m$listCount. Firefox ESR Browser. \e[0m $browserUnSandboxedLabel"
+        listOfInstalledBrowsersMenu="${listOfInstalledBrowsersMenu} \n\t\e[1;32m$listCount. Firefox ESR Browser. \e[0m $browserUnSandboxedLabel"
         browserUnSandboxedLabel=""
     fi
 
@@ -359,7 +399,7 @@ function getAllInstalledBrowsers(){
     then
         listCount=$[listCount+1] # Update list count
 
-        #  Check if Chroimum Web Browser is already un-sandboxed
+        #  Check if Chromimum Web Browser is already un-sandboxed
         checkForUnSandBoxedChromiumWeb
 
         if [ "$chromiumWebUnSandboxed" -eq 1 ]
@@ -370,20 +410,44 @@ function getAllInstalledBrowsers(){
         fi
 
         # Adding Chromium browser to list of installed browsers
-        listOfInstalledBrowsers="${listOfInstalledBrowsers} \n\t\e[1;32m$listCount. Chromium Web Browser. \e[0m $browserUnSandboxedLabel"
+        listOfInstalledBrowsersMenu="${listOfInstalledBrowsersMenu} \n\t\e[1;32m$listCount. Chromium Web Browser. \e[0m $browserUnSandboxedLabel"
         browserUnSandboxedLabel=""
     fi
 
-    # Add option to cancel unSandboxation
+    # Checking for Falkon UnSanboxing
+    if [[ $installedBrowsers == *"falkon"* ]]
+    then
+        listCount=$[listCount+1] # Update list count
+
+        # Check if Falkon KDE Browser is already un-sandboxed
+        checkForUnSandBoxedFalkon
+
+        if [ "$falkonFullyUnSandboxed" -eq 1 ]
+        then
+            browserUnSandboxedLabel="$unSandboxedLabel $willRunAsRoot)"
+        elif [ "$falkonPartiallyUnSandboxed" -eq 1 ]
+        then
+            browserUnSandboxedLabel="$partiallyUnSandboxedLabel $canPartiallyRunAsRoot)"
+        else
+            browserUnSandboxedLabel="$cantRunAsRoot"
+        fi
+
+        # Adding Falkon KDE browser to the list of installed browsers
+        listOfInstalledBrowsersMenu="${listOfInstalledBrowsersMenu} \n\t\e[1;32m$listCount. Falkon KDE Browser. \e[0m $browserUnSandboxedLabel"
+        browserUnSandboxedLabel=""
+    fi
+
+    # Add option to cancel unSandboxing
     listCount=$[listCount+1] # Update list count
-    listOfInstalledBrowsers="${listOfInstalledBrowsers} \n\t\e[1;32m$listCount. Exit."
+    listOfInstalledBrowsersMenu="${listOfInstalledBrowsersMenu} \n\t\e[1;32m$listCount. Exit."
+
     # Adding line break after list
-    listOfInstalledBrowsers="${listOfInstalledBrowsers} \n"
+    listOfInstalledBrowsersMenu="${listOfInstalledBrowsersMenu} \n"
 
     if [ "$1" == "--list" ]
     then
         # Display list of installed browsers
-        cPrint "YELLOW" "$listOfInstalledBrowsers"
+        cPrint "YELLOW" "$listOfInstalledBrowsersMenu"
     fi
 }
 
@@ -522,11 +586,69 @@ function unSandboxChromiumWebBrowser(){
     successMessage "$chromiumWebBrowser"
 }
 
-# Function to sandbox all browsers
+# Function to unSandbox Falkon KDE Browser
+function unSandboxFalkonKdeBrowser(){
+    cPrint "YELLOW" "Enabling/UnSandboxing $falkonKdeBrowser."
+    holdTerminal 2 # Hold
+
+    # Replace (Exec=falkon %u) with (Exec=falkon %u --no-sandbox)
+    local execWithUrl="Exec=falkon %u"
+
+    # Find and replace (Exec=falkon --new-tab) with
+    # (Exec=falkon --new-tab --no-sandbox)
+    local execNewTab="Exec=falkon --new-tab"
+
+    # Find and replace (Exec=falkon --new-window) with
+    # (Exec=falkon --new-window --no-sandbox)
+    local execNewWindow="Exec=falkon --new-window"
+
+    # Replace (Exec=falkon --private-browsing) with
+    # (Exec=falkon --private-browsing --no-sandbox)
+    local execPrivateBrowsing="Exec=falkon --private-browsing"
+
+
+    # unSandboxed execWithUrl (Exec=falkon %u)
+    local execWithUrlNoSandbox="$execWithUrl $noSandBoxFlag"
+    $(findReplace "$execWithUrl" "$execWithUrlNoSandbox" "$falkonKdePath")
+
+    # unSandboxed execNewTab (Exec=falkon --new-tab)
+    local execNewTabNoSandbox="$execNewTab $noSandBoxFlag"
+    $(findReplace "$execNewTab" "$execNewTabNoSandbox" "$falkonKdePath")
+
+    # unSandboxed execNewWindow (Exec=falkon --new-window)
+    local execNewWindowNoSandbox="$execNewWindow $noSandBoxFlag"
+    $(findReplace "$execNewWindow" "$execNewWindowNoSandbox" "$falkonKdePath")
+
+    # unSandboxed execPrivateBrowsing (Exec=falkon --private-browsing)
+    local execPrivateBrowsingNoSandbox="$execPrivateBrowsing $noSandBoxFlag"
+    $(findReplace "$execPrivateBrowsing" "$execPrivateBrowsingNoSandbox" "$falkonKdePath")
+
+
+    # Remove duplicate --no-sandbox commands incase of multiple script re-run
+    repeatedExecWithUrl="$execWithUrl $noSandBoxFlag $noSandBoxFlag"
+    $(findReplace "$repeatedExecWithUrl" "$execWithUrlNoSandbox" "$falkonKdePath")
+
+    repeatedExecNewTab="$execNewTab $noSandBoxFlag $noSandBoxFlag"
+    $(findReplace "$repeatedExecNewTab" "$execNewTabNoSandbox" "$falkonKdePath")
+
+    repeatedExecNewWindow="$execNewWindow $noSandBoxFlag $noSandBoxFlag"
+    $(findReplace "$repeatedExecNewWindow" "$execNewWindowNoSandbox" "$falkonKdePath")
+
+    repeatedexecPrivateBrowsing="$execPrivateBrowsing $noSandBoxFlag $noSandBoxFlag"
+    $(findReplace "$repeatedexecPrivateBrowsing" "$execPrivateBrowsingNoSandbox" "$falkonKdePath")
+
+    removeRepeatedNoSandBoxFlag "$falkonKdePath"
+
+    # Display Falkon KDE Browser Browser unsandboxed message
+    successMessage "$falkonKdeBrowser"
+}
+
+# Function to unSandbox Firefox ESR Browser
 function sandboxBrowser(){
+
     ${clear} # Clear terminal
 
-    cPrint "YELLOW" "Disabling/Sandboxing $firefoxEsrBrowser."
+    cPrint "YELLOW" "Unsandboxing $1."
     local path=""
 
     # Check for browser and set browser desktop file path
@@ -542,6 +664,9 @@ function sandboxBrowser(){
     elif [ "$1" == "$chromiumWebBrowser" ]
     then
         path="$chromiumWebPath"
+    elif [ "$1" == "$falkonKdeBrowser" ]
+    then
+        path="$falkonKdePath"
     fi
 
     # Remove unSandbox flag from Exec lines
@@ -570,7 +695,7 @@ function switchSandboxUnSandboxMenuChoice(){
         then # Option is not empty
             unset choice # Unset choice
             choice="$option Browser" # Set option to choice
-        else # Get cancel option
+        else # Get back option
             unset filterParam2 # Unset filter parameter
             # Get text between list number and period
             filterParam2="$choice. \K.*?(?= .)"
@@ -592,6 +717,7 @@ function switchSandboxUnSandboxMenuChoice(){
     elif  [[ "$choice" == "$disableSandbox $operaDesktopBrowser" ]]
     then
         sandboxBrowser "$operaDesktopBrowser" # sandbox Opera Desktop Browser
+
     # Google Chrome Browser
     elif  [[ "$choice" == "$enableUnsandbox $googleChromeBrowser" ]]
     then # Option : Chrome browser
@@ -599,6 +725,7 @@ function switchSandboxUnSandboxMenuChoice(){
     elif  [[ "$choice" == "$disableSandbox $googleChromeBrowser" ]]
     then
         sandboxBrowser "$googleChromeBrowser" # sandbox Google Chrome Browser
+
     # Firefox ESR Browser
     elif  [[ "$choice" == "$enableUnsandbox $firefoxEsrBrowser" ]]
     then # Option : Firefox ESR browser
@@ -606,6 +733,7 @@ function switchSandboxUnSandboxMenuChoice(){
     elif  [[ "$choice" == "$disableSandbox $firefoxEsrBrowser" ]]
     then
         sandboxBrowser "$firefoxEsrBrowser" # sandbox Firefox ESR Browser
+
     # Chromium Web Browser
     elif  [[ "$choice" == "$enableUnsandbox $chromiumWebBrowser" ]]
     then # Option : Chromium Web
@@ -613,9 +741,18 @@ function switchSandboxUnSandboxMenuChoice(){
     elif  [[ "$choice" == "$disableSandbox $chromiumWebBrowser" ]]
     then
         sandboxBrowser "$chromiumWebBrowser" # sandbox Chromium Web Browser
+
+    # Falkon KDE Browser
+    elif  [[ "$choice" == "$enableUnsandbox $falkonKdeBrowser" ]]
+    then # Option : Falkon KDE
+        unSandboxFalkonKdeBrowser # unSandbox Falkon KDE Browser
+    elif  [[ "$choice" == "$disableSandbox $falkonKdeBrowser" ]]
+    then
+        sandboxBrowser "$falkonKdeBrowser" # sandbox Falkon KDE Browser
+
     # Back
     elif  [[ "$choice" == 'back' ]]
-    then # Option : Exit script
+    then # Option : Return to main menu
         ${clear} # Clear terminal
     fi
 
@@ -640,13 +777,14 @@ function sandboxUnSandboxMenu(){
         # Opera Desktop Browser
         if [ "$1" == "$operaDesktopBrowser" ]
         then
-            listCount=$[listCount+1]
+            listCount=$[listCount+1] # Increment menu number count
             if [ "$operaFullyUnSandboxed" -eq 1 ]
             then # Sandbox
                 unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $disableSandbox $1."
             elif [ "$operaPartiallyUnSandboxed" -eq 1 ]
             then # Partial Un-Sandbox (unSandbox fully(--no-sandbox) or Sandbox)
                 unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $enableUnsandbox $1."
+                listCount=$[listCount+1] # Increment menu number count
                 unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $disableSandbox $1."
             else # None UnSandboxed
                 unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $enableUnsandbox $1."
@@ -662,6 +800,7 @@ function sandboxUnSandboxMenu(){
             elif [ "$googleChromePartiallyUnSandboxed" -eq 1 ]
             then # Partial Un-Sandbox (unSandbox fully(--no-sandbox) or Sandbox)
                 unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $enableUnsandbox $1."
+                listCount=$[listCount+1] # Increment menu number count
                 unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $disableSandbox $1."
             else # None UnSandboxed
                 unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $enableUnsandbox $1."
@@ -686,6 +825,22 @@ function sandboxUnSandboxMenu(){
             then
                 unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $disableSandbox $1."
             else
+                unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $enableUnsandbox $1."
+            fi
+
+        # Falkon KDE Browser
+        elif [ "$1" == "$falkonKdeBrowser" ]
+        then
+            listCount=$[listCount+1]
+            if [ "$falkonFullyUnSandboxed" -eq 1 ]
+            then # Sandbox
+                unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $disableSandbox $1."
+            elif [ "$falkonPartiallyUnSandboxed" -eq 1 ]
+            then # Partial Un-Sandbox (unSandbox fully(--no-sandbox) or Sandbox)
+                unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $enableUnsandbox $1."
+                listCount=$[listCount+1] # Increment menu number count
+                unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $disableSandbox $1."
+            else # None UnSandboxed
                 unSandboxSandboxMenu="$unSandboxSandboxMenu\n\t$listCount. $enableUnsandbox $1."
             fi
         fi
@@ -730,6 +885,11 @@ function switchMainMenuChoice(){
         # unSandbox/sandbox Chromium Web Browser
         sandboxUnSandboxMenu "$chromiumWebBrowser"; choice=""
 
+    elif  [[ "$choice" == 'falkon kde' ]]
+    then # Option : Falkon KDE Browser
+        # unSandbox/sandbox Falkon KDE Browser
+        sandboxUnSandboxMenu "$falkonKdeBrowser"; choice=""
+
     elif  [[ "$choice" == 'exit' ]]
     then # Option : Exit script
         ${clear} # Clear terminal
@@ -768,7 +928,7 @@ function displayInstalledBrowsersMenu(){
 
                 unset list # Unset List
                 # Get list of all installed browsers
-                list="$listOfInstalledBrowsers"
+                list="$listOfInstalledBrowsersMenu"
                 unset filterParam # Unset filter parameter
                 # Get text between list number and 'Browser' word
                 filterParam="$choice. \K.*?(?= Browser.)"
@@ -843,6 +1003,3 @@ function displayMainMenu(){
 
 displayMainMenu # Display browser selection menu
 exitScript # Exit script
-
-# Konqueror
-# Falkon
