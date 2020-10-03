@@ -15,4 +15,4 @@
 
 **Version 3.0**
 1. Added options to enable/un-sandbox:
-    - `Falkod KDE` Browser.
+    - `Falkon KDE` Browser.

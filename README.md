@@ -7,7 +7,8 @@ This script supports the following browsers:
   1. `Opera Desktop` Browser.
   2. `Google Chrome` Browser.
   3. `Firefox ESR` Browser.
-  4. `Chromium Web` Browser.
+  4. `Chromium Web` Browser and
+  5. `Falkon KDE` Browser.
 
 \
 To use this script:
