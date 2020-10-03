@@ -12,3 +12,7 @@
 **Version 2.0:**
 1. Added feature to disable/sandbox browsers.
 2. Removed option to un-sandbox all browsers at once.
+
+**Version 3.0**
+1. Added options to enable/un-sandbox:
+    - `Falkod KDE` Browser.
