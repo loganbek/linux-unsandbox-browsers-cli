@@ -290,7 +290,7 @@ function getAllInstalledBrowsers(){
     local -r unSandboxedLabel="\e[1;33mUn-Sandboxed.\e[0m"
     local -r willRunAsRoot="(Will run as root)"
     local -r canPartiallyRunAsRoot="\e[1;31m(Can partially run as root)\e[0m"
-    local -r cantRunAsRoot="\e[1;31m(Cannot run as root)\e[0m"
+    local -r cantRunAsRoot="\e[1;31m(May not run as root)\e[0m"
 
     # Unset variables
     unset installedBrowsers listOfInstalledBrowsersMenu
