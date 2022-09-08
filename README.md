@@ -1,7 +1,7 @@
 # linux-unsandbox-browsers-cli
 
 \
-This shell script enables/disables browsers to run as root in Debian and Ubuntu distros by un-sandboxing/sandboxing them.
+This shell script enables/disables browsers to run as root in Debian and Ubuntu distros by un-sandboxing/sandboxing them. This is not advisable. I built this for use temporarily in some situations. Running some apps in root is not secure.
 
 This script supports the following browsers:
   1. `Opera Desktop` Browser.
